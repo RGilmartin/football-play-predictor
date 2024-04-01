@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./predictionForm.css";
+import { brain } from "brain.js";
+const modelJSON = require('../model.json');
 
 function FootballPredictionForm() {
   const [down, setDown] = useState(1);
   const [distance, setDistance] = useState("");
   const [yardLine, setYardLine] = useState("");
+  const [prediction, setPrediction] = useState(-1);
+  const [nn, setNN] = useState(new brain.NeuralNetwork() );
+
+  const scale = (number, [inMin, inMax], [outMin, outMax]) => {
+    // if you need an integer value use Math.floor or Math.ceil here
+    return ((number - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin;
+  };
+
+  useEffect(() => {
+  
+  }, [nn]);
 
   const handlePrediction = () => {
-    // You can perform your prediction logic here
-    console.log(
-      `Prediction: Down - ${down}, Distance - ${distance}, Yard Line - ${yardLine}`,
-    );
+    nn.fromJSON(JSON.parse(modelJSON));
+    let pred = nn.run({input: {DN: scale(down, [1,4], [0,1]),
+    YARDLN: scale(yardLine, [-50, 50], [0,1]),
+    DIST: scale(distance, [0,100],[0,1])}});
+    
+    setPrediction(pred);
+
     setDown(1);
     setDistance("");
     setYardLine("");
@@ -52,6 +68,8 @@ function FootballPredictionForm() {
       <button className="pred-button" onClick={handlePrediction}>
         Make Prediction
       </button>
+
+      <p>{prediction}</p>
     </div>
   );
 }
