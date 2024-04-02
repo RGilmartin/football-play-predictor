@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import modelJSON from "../model.json";
 import "./predictionForm.css";
 const brain = require("brain.js");
-const modelJSON = require('../model.json');
 
 function FootballPredictionForm() {
   const [down, setDown] = useState(1);
@@ -21,7 +21,9 @@ function FootballPredictionForm() {
     YARDLN: scale(yardLine, [-50, 50], [0,1]),
     DIST: scale(distance, [0,100],[0,1])}});
     
-    setPrediction(pred);
+    // The closer to 1 the prediction is, the more sure it is that it is a run
+
+    setPrediction(pred["RUN"].toString());
 
     setDown(1);
     setDistance("");
@@ -65,7 +67,7 @@ function FootballPredictionForm() {
         Make Prediction
       </button>
 
-      <p>{JSON.parse(modelJSON)}</p>
+      <p>{prediction}</p>
     </div>
   );
 }
