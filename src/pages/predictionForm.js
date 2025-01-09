@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import modelJSON from "../model.json";
 import "./predictionForm.css";
-const brain = require("brain.js");
+import { recurrent } from "brain.js";
+
+const {LSTMTimeStep} = recurrent;
 
 function FootballPredictionForm() {
   const [down, setDown] = useState(1);
   const [distance, setDistance] = useState("");
   const [yardLine, setYardLine] = useState("");
   const [prediction, setPrediction] = useState(-1);
-  const [nn, setNN] = useState(new brain.NeuralNetwork());
+  const [nn] = useState(new LSTMTimeStep());
 
   const scale = (number, [inMin, inMax], [outMin, outMax]) => {
     // if you need an integer value use Math.floor or Math.ceil here
@@ -17,13 +19,15 @@ function FootballPredictionForm() {
 
   const handlePrediction = () => {
     nn.fromJSON(modelJSON);
-    let pred = nn.run({input: {DN: scale(down, [1,4], [0,1]),
-    YARDLN: scale(yardLine, [-50, 50], [0,1]),
-    DIST: scale(distance, [0,100],[0,1])}});
+    let pred = nn.forecast([scale(down, [1,4], [0,1]),
+    scale(yardLine, [-50, 50], [0,1]),
+    scale(distance, [0,100],[0,1])], 1);
+
+    console.log(pred); 
     
     // The closer to 1 the prediction is, the more sure it is that it is a run
 
-    setPrediction(pred["RUN"].toString());
+    setPrediction(pred.toString() > 0 ? "Run" : "Pass");
 
     setDown(1);
     setDistance("");
